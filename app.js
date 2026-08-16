@@ -7,88 +7,21 @@
   const STORAGE_KEY = "my-finances-v1";
 
   /* ============================================================
-     Live net worth (Google Sheets, via OAuth)
-     Fill these in — see README for how to create an OAuth client.
+     Live net worth (Google Apps Script endpoint)
+     Paste your deployed Apps Script /exec URL here — see README.
      ============================================================ */
-  const SHEETS_CONFIG = {
-    clientId: "483381274763-v4a9p7fcg97i0cfijm8e795t2l890o78.apps.googleusercontent.com",         // OAuth 2.0 Client ID (type: Web application) from Google Cloud Console
-    spreadsheetId: "1dDg5IKtKjiTAJWkVhSET7l2EmB7wULf46g3GRgsfTAA",    // the long id in your sheet's URL: /spreadsheets/d/<THIS>/edit
-    range: "Sheet1!B5"    // the single cell holding your net worth number
-  };
-  const SHEETS_SCOPE = "https://www.googleapis.com/auth/spreadsheets.readonly";
-  const SHEETS_TOKEN_KEY = "my-finances-sheets-token-v1";
-
-  let tokenClient = null;
-  let sheetsAccessToken = null;
-
-  function loadStoredSheetsToken() {
-    try {
-      const raw = sessionStorage.getItem(SHEETS_TOKEN_KEY);
-      if (!raw) return null;
-      const parsed = JSON.parse(raw);
-      if (!parsed.token || !parsed.expiresAt || Date.now() >= parsed.expiresAt) return null;
-      return parsed.token;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function storeSheetsToken(token, expiresInSeconds) {
-    sheetsAccessToken = token;
-    try {
-      sessionStorage.setItem(SHEETS_TOKEN_KEY, JSON.stringify({
-        token, expiresAt: Date.now() + (expiresInSeconds * 1000) - 60000
-      }));
-    } catch (e) { /* ignore */ }
-  }
-
-  function initGoogleAuth() {
-    if (!SHEETS_CONFIG.clientId || !window.google || !google.accounts) return;
-    tokenClient = google.accounts.oauth2.initTokenClient({
-      client_id: SHEETS_CONFIG.clientId,
-      scope: SHEETS_SCOPE,
-      callback: (resp) => {
-        if (resp.error) { console.warn("Google Sheets auth failed", resp); return; }
-        storeSheetsToken(resp.access_token, resp.expires_in);
-        $("#connectSheetBtn").style.display = "none";
-        refreshLiveNetWorth();
-      }
-    });
-
-    sheetsAccessToken = loadStoredSheetsToken();
-    if (sheetsAccessToken) {
-      refreshLiveNetWorth();
-    } else {
-      // First visit (or expired session): needs an explicit click to satisfy the browser's
-      // popup-blocker, which requires the consent prompt to originate from a user gesture.
-      $("#connectSheetBtn").style.display = "";
-    }
-  }
-
-  $("#connectSheetBtn").addEventListener("click", () => {
-    if (tokenClient) tokenClient.requestAccessToken({ prompt: "consent" });
-  });
+  const NET_WORTH_ENDPOINT = "https://script.google.com/macros/s/AKfycbxAYTrEIXMu22xAKvtLkBntCvbOsTdB6zk8eyDz6sfJcTEa9rQzeqcC2-RVibWVG3JS_g/exec";
 
   async function fetchLiveNetWorth() {
-    const { spreadsheetId, range } = SHEETS_CONFIG;
-    if (!spreadsheetId || !sheetsAccessToken) return null;
+    if (!NET_WORTH_ENDPOINT) return null;
     try {
-      const url = `https://sheets.googleapis.com/v4/spreadsheets/${encodeURIComponent(spreadsheetId)}/values/${encodeURIComponent(range)}`;
-      const res = await fetch(url, { headers: { Authorization: `Bearer ${sheetsAccessToken}` } });
-      if (res.status === 401) {
-        // token expired/revoked — clear it and ask the user to reconnect
-        sheetsAccessToken = null;
-        try { sessionStorage.removeItem(SHEETS_TOKEN_KEY); } catch (e) { /* ignore */ }
-        $("#connectSheetBtn").style.display = "";
-        return null;
-      }
-      if (!res.ok) throw new Error(`Sheets API responded ${res.status}`);
+      const res = await fetch(NET_WORTH_ENDPOINT);
+      if (!res.ok) throw new Error(`Endpoint responded ${res.status}`);
       const data = await res.json();
-      const raw = data.values && data.values[0] && data.values[0][0];
-      const value = parseFloat(String(raw).replace(/[^0-9.-]/g, ""));
+      const value = parseFloat(data.netWorth);
       return isFinite(value) ? value : null;
     } catch (e) {
-      console.warn("Couldn't fetch live net worth from Google Sheets — showing demo value instead.", e);
+      console.warn("Couldn't fetch live net worth — showing demo value instead.", e);
       return null;
     }
   }
@@ -296,7 +229,7 @@
   function renderDashboard() {
     $("#statNetWorth").textContent = formatMoney(currentNetWorth());
     renderTrend($("#statNetWorthTrend"), pctChange(currentNetWorth(), netWorthAsOf(daysAgoISO(30))), "vs 30 days ago");
-    if (sheetsAccessToken) refreshLiveNetWorth();
+    refreshLiveNetWorth();
 
     const cmk = currentMonthKey(), pmk = previousMonthKey();
     const income = incomeForMonth(cmk), spending = spendingForMonth(cmk);
@@ -779,5 +712,4 @@
   calState = { year: now.getFullYear(), month: now.getMonth() };
   $("#currentDate").textContent = now.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   setActiveView("dashboard");
-  initGoogleAuth();
 })();
