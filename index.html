@@ -109,9 +109,13 @@
         <div class="panel receipt chart-panel">
           <div class="panel-header">
             <h3>Net worth trend</h3>
-            <span class="panel-sub">Last 30 days</span>
+            <div class="chart-controls">
+              <button class="chart-btn is-active" data-range="6m">6 mo</button>
+              <button class="chart-btn" data-range="1y">1 yr</button>
+              <button class="chart-btn" data-range="all">All</button>
+            </div>
           </div>
-          <canvas id="netWorthChart" height="220" aria-label="Net worth over the last 30 days" role="img"></canvas>
+          <canvas id="netWorthChart" height="220" aria-label="Net worth over time" role="img"></canvas>
         </div>
 
         <div class="panel receipt txn-panel">

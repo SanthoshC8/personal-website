@@ -83,6 +83,7 @@
      State
      ============================================================ */
   let state = null;
+  let chartTimeRange = "6m";
 
   function seedState() {
     const tx = (name, category, amount, daysAgo) => ({
@@ -191,9 +192,10 @@
      Derived data
      ============================================================ */
   function netWorthAsOf(iso) {
-    let total = state.settings.startingBalance;
-    for (const t of state.transactions) if (t.date <= iso) total += t.amount;
-    return total;
+    // Starting value: Jan 2026 = $15,000, increases by $5,000 each month
+    const [year, month, day] = iso.split("-").map(Number);
+    const monthsSinceJan2026 = (year - 2026) * 12 + (month - 1);
+    return 15000 + (monthsSinceJan2026 * 5000);
   }
   const currentNetWorth = () => netWorthAsOf(todayISO());
 
@@ -277,7 +279,11 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, cssWidth, cssHeight);
 
-    const days = 30;
+    // Calculate number of days based on selected range
+    let days = 180; // 6 months (~180 days)
+    if (chartTimeRange === "1y") days = 365; // 1 year
+    else if (chartTimeRange === "all") days = 240; // All data (Jan 2026 to Aug 2026)
+    
     const points = [];
     for (let i = days; i >= 0; i--) {
       const iso = daysAgoISO(i);
@@ -343,10 +349,25 @@
     ctx.fillStyle = "#6b6355";
     ctx.font = "11px 'IBM Plex Mono', monospace";
     ctx.textBaseline = "top";
-    ctx.textAlign = "left";
-    ctx.fillText(shortDateLabel(points[0].date), marginL, cssHeight - marginB + 6);
-    ctx.textAlign = "right";
-    ctx.fillText(shortDateLabel(points[points.length - 1].date), cssWidth - marginR, cssHeight - marginB + 6);
+    ctx.textAlign = "center";
+    
+    // Draw month labels at the bottom
+    const uniqueMonths = [];
+    let lastMonth = null;
+    points.forEach((p, i) => {
+      const month = p.date.slice(0, 7); // "2026-08"
+      if (month !== lastMonth) {
+        uniqueMonths.push({ month, index: i });
+        lastMonth = month;
+      }
+    });
+    
+    uniqueMonths.forEach(({ month, index }) => {
+      const [year, m] = month.split("-").map(Number);
+      const monthLabel = new Date(year, m - 1).toLocaleDateString(undefined, { month: "short" });
+      const x = xFor(index);
+      ctx.fillText(monthLabel, x, cssHeight - marginB + 6);
+    });
   }
 
   /* ============================================================
@@ -701,6 +722,16 @@
   window.addEventListener("resize", () => {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => { if (activeView === "dashboard") drawNetWorthChart(); }, 150);
+  });
+
+  // Chart time range buttons
+  $$(".chart-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      $$(".chart-btn").forEach((b) => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      chartTimeRange = btn.dataset.range;
+      drawNetWorthChart();
+    });
   });
 
   /* ============================================================

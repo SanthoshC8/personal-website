@@ -446,6 +446,34 @@ a { color: var(--verdigris-light); }
   color: var(--text-onpaper-muted);
 }
 
+.chart-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.chart-btn {
+  padding: 4px 10px;
+  font-size: 12px;
+  font-family: var(--font-mono);
+  color: var(--text-onpaper-muted);
+  background: none;
+  border: 1px solid var(--paper-line);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chart-btn:hover {
+  color: var(--text-onpaper);
+  border-color: var(--text-onpaper-muted);
+}
+
+.chart-btn.is-active {
+  background: var(--paper-line);
+  color: var(--text-onpaper);
+  border-color: var(--text-onpaper);
+}
+
 .chart-panel canvas {
   width: 100%;
   display: block;
