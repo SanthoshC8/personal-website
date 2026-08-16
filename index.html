@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>My Finances</title>
+<meta name="description" content="A personal finance dashboard — track net worth, budgets, bills, and money tasks.">
+
+<!-- iPhone / PWA-style polish -->
+<meta name="theme-color" content="#12151b">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Finances">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='11' fill='%2312151b' stroke='%233E7C6A' stroke-width='1.5'/%3E%3Cpath d='M12 6v12M9 8.6c0-1.5 1.3-2.6 3-2.6s3 1.1 3 2.4c0 2.4-6 2-6 4.8 0 1.3 1.3 2.4 3 2.4s3-1.1 3-2.6' fill='none' stroke='%233E7C6A' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="styles.css">
+<script src="https://accounts.google.com/gsi/client" defer></script>
+</head>
+<body>
+
+<!-- Icon sprite sheet -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="icon-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="icon-wallet" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="14" rx="2.2"/><path d="M2 10.5h20"/><circle cx="17" cy="14.3" r="1.2" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="icon-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+  <symbol id="icon-check-square" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2.5"/><path d="M7.5 12.5l3 3 6-6.5"/></symbol>
+  <symbol id="icon-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6"/></symbol>
+  <symbol id="icon-sliders" viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18"/><circle class="knob" cx="15" cy="6" r="2.2"/><circle class="knob" cx="8" cy="12" r="2.2"/><circle class="knob" cx="16" cy="18" r="2.2"/></symbol>
+  <symbol id="icon-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="icon-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="icon-chevron-left" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></symbol>
+  <symbol id="icon-chevron-right" viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></symbol>
+  <symbol id="icon-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6.5 7l.8 12.2a2 2 0 0 0 2 1.8h5.4a2 2 0 0 0 2-1.8L17.5 7"/></symbol>
+  <symbol id="icon-up-right" viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></symbol>
+  <symbol id="icon-down-right" viewBox="0 0 24 24"><path d="M7 7l10 10M17 9v8H9"/></symbol>
+  <symbol id="icon-stamp" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9.2"/><path d="M12 6.5v11M9.4 9c0-1.4 1.2-2.4 2.6-2.4s2.6 1 2.6 2.2c0 2.2-5.2 1.9-5.2 4.3 0 1.2 1.2 2.2 2.6 2.2s2.6-1 2.6-2.3"/></symbol>
+</svg>
+
+<div class="app">
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <svg class="icon brand-mark"><use href="#icon-stamp"/></svg>
+        <h1>My Finances</h1>
+      </div>
+      <div class="topbar-meta">
+        <span class="date-chip" id="currentDate">August 2026</span>
+        <button class="icon-btn" id="settingsBtn" aria-label="Settings" aria-haspopup="dialog">
+          <svg class="icon"><use href="#icon-sliders"/></svg>
+          <span class="icon-btn-label">Settings</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="app-body">
+
+    <nav class="sidebar" aria-label="Main">
+      <ul class="nav-list">
+        <li class="nav-item is-active" data-view="dashboard">
+          <button type="button"><svg class="icon"><use href="#icon-grid"/></svg><span>Dashboard</span></button>
+        </li>
+        <li class="nav-item" data-view="budget">
+          <button type="button"><svg class="icon"><use href="#icon-wallet"/></svg><span>Budget</span></button>
+        </li>
+        <li class="nav-item" data-view="calendar">
+          <button type="button"><svg class="icon"><use href="#icon-calendar"/></svg><span>Calendar</span></button>
+        </li>
+        <li class="nav-item" data-view="tasks">
+          <button type="button"><svg class="icon"><use href="#icon-check-square"/></svg><span>Tasks</span></button>
+        </li>
+      </ul>
+      <p class="sidebar-note">Demo data lives in this browser only — nothing is sent anywhere.</p>
+    </nav>
+
+    <main class="content">
+
+      <!-- DASHBOARD -->
+      <section class="view is-active" id="view-dashboard" data-view="dashboard">
+        <div class="view-header">
+          <h2>Dashboard</h2>
+          <button class="btn btn-primary" id="addTxnBtn" type="button">
+            <svg class="icon"><use href="#icon-plus"/></svg> Add transaction
+          </button>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-card receipt">
+            <span class="stat-label">Net worth</span>
+            <span class="stat-value" id="statNetWorth">$0.00</span>
+            <span class="stat-trend" id="statNetWorthTrend"></span>
+            <button class="btn btn-ghost" id="connectSheetBtn" type="button" style="display:none">Connect Google Sheet</button>
+          </div>
+          <div class="stat-card receipt">
+            <span class="stat-label">Income <em>this month</em></span>
+            <span class="stat-value positive" id="statIncome">$0.00</span>
+            <span class="stat-trend" id="statIncomeTrend"></span>
+          </div>
+          <div class="stat-card receipt">
+            <span class="stat-label">Spending <em>this month</em></span>
+            <span class="stat-value negative" id="statSpending">$0.00</span>
+            <span class="stat-trend" id="statSpendingTrend"></span>
+          </div>
+        </div>
+
+        <div class="panel receipt chart-panel">
+          <div class="panel-header">
+            <h3>Net worth trend</h3>
+            <span class="panel-sub">Last 30 days</span>
+          </div>
+          <canvas id="netWorthChart" height="220" aria-label="Net worth over the last 30 days" role="img"></canvas>
+        </div>
+
+        <div class="panel receipt txn-panel">
+          <div class="panel-header">
+            <h3>Recent transactions</h3>
+          </div>
+          <ul class="txn-list" id="recentTxnList"></ul>
+        </div>
+      </section>
+
+      <!-- BUDGET -->
+      <section class="view" id="view-budget" data-view="budget">
+        <div class="view-header">
+          <h2>Budget</h2>
+          <button class="btn btn-primary" id="addBudgetBtn" type="button">
+            <svg class="icon"><use href="#icon-plus"/></svg> Add category
+          </button>
+        </div>
+
+        <div class="panel receipt budget-summary" id="budgetSummary"></div>
+
+        <div class="budget-list" id="budgetList"></div>
+      </section>
+
+      <!-- CALENDAR -->
+      <section class="view" id="view-calendar" data-view="calendar">
+        <div class="view-header">
+          <h2>Calendar</h2>
+        </div>
+
+        <div class="panel receipt calendar-panel">
+          <div class="calendar-nav">
+            <button class="icon-btn" id="calPrev" type="button" aria-label="Previous month"><svg class="icon"><use href="#icon-chevron-left"/></svg></button>
+            <span id="calMonthLabel">August 2026</span>
+            <button class="icon-btn" id="calNext" type="button" aria-label="Next month"><svg class="icon"><use href="#icon-chevron-right"/></svg></button>
+          </div>
+          <div class="calendar-weekdays">
+            <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+          </div>
+          <div class="calendar-grid" id="calendarGrid"></div>
+          <div class="calendar-legend">
+            <span><i class="dot dot-money"></i> money moved</span>
+            <span><i class="dot dot-task"></i> task due</span>
+          </div>
+        </div>
+
+        <div class="panel receipt day-detail" id="dayDetail" hidden></div>
+      </section>
+
+      <!-- TASKS -->
+      <section class="view" id="view-tasks" data-view="tasks">
+        <div class="view-header">
+          <h2>Tasks</h2>
+        </div>
+
+        <form class="panel receipt task-form" id="taskForm">
+          <input type="text" id="taskInput" placeholder="Add a money task — e.g. Pay credit card" maxlength="80" required>
+          <input type="date" id="taskDue" aria-label="Due date (optional)">
+          <button class="btn btn-primary" type="submit">
+            <svg class="icon"><use href="#icon-plus"/></svg><span class="btn-label-full"> Add task</span>
+          </button>
+        </form>
+
+        <div class="task-list" id="taskList"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <nav class="bottom-tabbar" aria-label="Main">
+    <button type="button" class="tab-item is-active" data-view="dashboard">
+      <svg class="icon"><use href="#icon-grid"/></svg><span>Dashboard</span>
+    </button>
+    <button type="button" class="tab-item" data-view="budget">
+      <svg class="icon"><use href="#icon-wallet"/></svg><span>Budget</span>
+    </button>
+    <button type="button" class="tab-item" data-view="calendar">
+      <svg class="icon"><use href="#icon-calendar"/></svg><span>Calendar</span>
+    </button>
+    <button type="button" class="tab-item" data-view="tasks">
+      <svg class="icon"><use href="#icon-check-square"/></svg><span>Tasks</span>
+    </button>
+  </nav>
+
+  <button class="fab" id="fabAdd" type="button" aria-label="Add">
+    <svg class="icon"><use href="#icon-plus"/></svg>
+  </button>
+
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+    <div class="modal-header">
+      <h3 id="settingsTitle">Settings</h3>
+      <button class="icon-btn" data-close="settingsOverlay" aria-label="Close"><svg class="icon"><use href="#icon-x"/></svg></button>
+    </div>
+    <form id="settingsForm">
+      <label class="field">
+        <span>Currency</span>
+        <select id="settingCurrency">
+          <option value="USD">$ USD</option>
+          <option value="EUR">€ EUR</option>
+          <option value="GBP">£ GBP</option>
+          <option value="CAD">$ CAD</option>
+          <option value="JPY">¥ JPY</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Starting balance</span>
+        <input type="number" id="settingStartingBalance" step="0.01">
+      </label>
+      <label class="field">
+        <span>Monthly income goal</span>
+        <input type="number" id="settingIncomeGoal" step="0.01">
+      </label>
+      <div class="modal-actions modal-actions-split">
+        <button type="button" class="btn btn-ghost" id="resetDataBtn">Reset demo data</button>
+        <button type="submit" class="btn btn-primary">Save changes</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ADD TRANSACTION MODAL -->
+<div class="modal-overlay" id="txnOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="txnTitle">
+    <div class="modal-header">
+      <h3 id="txnTitle">Add transaction</h3>
+      <button class="icon-btn" data-close="txnOverlay" aria-label="Close"><svg class="icon"><use href="#icon-x"/></svg></button>
+    </div>
+    <form id="txnForm">
+      <div class="segmented" id="txnTypeSwitch">
+        <button type="button" class="segmented-btn is-active" data-type="expense">Expense</button>
+        <button type="button" class="segmented-btn" data-type="income">Income</button>
+      </div>
+      <label class="field">
+        <span>Description</span>
+        <input type="text" id="txnName" placeholder="e.g. Groceries" maxlength="60" required>
+      </label>
+      <label class="field">
+        <span>Category</span>
+        <select id="txnCategory">
+          <option>Groceries</option>
+          <option>Dining</option>
+          <option>Transport</option>
+          <option>Housing</option>
+          <option>Bills</option>
+          <option>Entertainment</option>
+          <option>Shopping</option>
+          <option>Health</option>
+          <option>Personal</option>
+          <option>Income</option>
+          <option>Other</option>
+        </select>
+      </label>
+      <label class="field">
+        <span>Amount</span>
+        <input type="number" id="txnAmount" min="0" step="0.01" placeholder="0.00" required>
+      </label>
+      <label class="field">
+        <span>Date</span>
+        <input type="date" id="txnDate" required>
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-close="txnOverlay">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add transaction</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ADD BUDGET CATEGORY MODAL -->
+<div class="modal-overlay" id="budgetOverlay" hidden>
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="budgetTitle">
+    <div class="modal-header">
+      <h3 id="budgetTitle">Add budget category</h3>
+      <button class="icon-btn" data-close="budgetOverlay" aria-label="Close"><svg class="icon"><use href="#icon-x"/></svg></button>
+    </div>
+    <form id="budgetForm">
+      <label class="field">
+        <span>Category name</span>
+        <input type="text" id="budgetCategory" placeholder="e.g. Travel" maxlength="30" required>
+      </label>
+      <label class="field">
+        <span>Monthly limit</span>
+        <input type="number" id="budgetAllocated" min="0" step="0.01" placeholder="0.00" required>
+      </label>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" data-close="budgetOverlay">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add category</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap" aria-live="polite"></div>
+
+<script src="app.js" defer></script>
+</body>
+</html>
