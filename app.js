@@ -144,7 +144,7 @@
         { id: cryptoId(), text: "Cancel unused subscription", done: false, due: null },
         { id: cryptoId(), text: "File receipts for taxes", done: false, due: daysAgoISO(-10) }
       ],
-      study: { goal: 40, sessions: [] }
+      study: { goal: 200, sessions: [] }
     };
   }
 
