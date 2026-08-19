@@ -673,6 +673,15 @@
     showToast(`${hours} study hours added`);
   });
 
+  $("#resetStudyBtn").addEventListener("click", () => {
+    if (!state.study.sessions.length) return;
+    if (!window.confirm("Reset all logged study hours? This can't be undone.")) return;
+    state.study.sessions = [];
+    saveState();
+    renderStudy();
+    showToast("Study progress reset");
+  });
+
   $("#fabAdd").addEventListener("click", () => {
     if (activeView === "dashboard") openModal("txnOverlay", prepTxnModal);
     else if (activeView === "budget") openModal("budgetOverlay", () => $("#budgetForm").reset());

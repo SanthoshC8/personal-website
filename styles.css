@@ -659,7 +659,9 @@ a { color: var(--verdigris-light); }
 }
 
 .study-field input:focus { border-color: var(--verdigris); outline: none; }
+.study-actions { display: flex; align-items: center; gap: 8px; }
 .study-submit { height: 46px; }
+.study-reset { height: 46px; }
 
 .study-progress-panel { max-width: 620px; }
 
@@ -857,7 +859,8 @@ a { color: var(--verdigris-light); }
   .panel { padding: 18px 16px 16px; }
 
   .study-form { grid-template-columns: 1fr; gap: 12px; }
-  .study-submit { width: 100%; justify-content: center; }
+  .study-actions { flex-direction: column; align-items: stretch; }
+  .study-submit, .study-reset { width: 100%; justify-content: center; }
   .study-progress-copy { flex-direction: column; gap: 6px; }
 
   .task-form { flex-direction: column; align-items: stretch; }

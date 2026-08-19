@@ -155,9 +155,12 @@
             <span>Total goal</span>
             <input type="number" id="studyGoal" min="0.25" step="0.25" placeholder="40" required>
           </label>
-          <button class="btn btn-primary study-submit" type="submit">
-            <svg class="icon"><use href="#icon-plus"/></svg> Add study hours
-          </button>
+          <div class="study-actions">
+            <button class="btn btn-primary study-submit" type="submit">
+              <svg class="icon"><use href="#icon-plus"/></svg> Add study hours
+            </button>
+            <button class="btn btn-ghost study-reset" id="resetStudyBtn" type="button">Reset progress</button>
+          </div>
         </form>
 
         <div class="panel receipt study-progress-panel">
