@@ -700,6 +700,17 @@ a { color: var(--verdigris-light); }
 .study-ring-center span { color: var(--text-onpaper-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
 .study-status { text-align: center; color: var(--text-onpaper-muted); font-size: 13px; }
 
+.study-history { margin-top: 24px; border-top: 1px dashed var(--paper-line); padding-top: 18px; }
+.study-history-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.study-history-header h3 { font-size: 16px; }
+.study-history-header span { color: var(--text-onpaper-muted); font-family: var(--font-mono); font-size: 10.5px; }
+.study-session-list { list-style: none; margin: 0; padding: 0; }
+.study-session-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 0; border-bottom: 1px dashed var(--paper-line); font-family: var(--font-mono); font-size: 13px; }
+.study-session-row:last-child { border-bottom: none; }
+.study-session-row span { font-weight: 600; }
+.study-session-row time { color: var(--text-onpaper-muted); }
+.study-history-empty { color: var(--text-onpaper-muted); font-size: 13px; padding: 10px 0 2px; }
+
 /* ============================================================
    Tasks
    ============================================================ */

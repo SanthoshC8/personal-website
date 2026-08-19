@@ -162,7 +162,14 @@
         study: {
           goal: Number(parsed.study && parsed.study.goal) > 0 ? Number(parsed.study.goal) : base.study.goal,
           sessions: Array.isArray(parsed.study && parsed.study.sessions)
-            ? parsed.study.sessions.filter((hours) => Number(hours) > 0).map(Number)
+            ? parsed.study.sessions.reduce((sessions, session) => {
+              const hours = typeof session === "object" ? Number(session.hours) : Number(session);
+              if (hours > 0) sessions.push({
+                hours,
+                date: typeof session === "object" && session.date ? session.date : null
+              });
+              return sessions;
+            }, [])
             : base.study.sessions
         }
       };
@@ -422,7 +429,7 @@
      Study
      ============================================================ */
   function renderStudy() {
-    const totalStudied = state.study.sessions.reduce((sum, hours) => sum + hours, 0);
+    const totalStudied = state.study.sessions.reduce((sum, session) => sum + session.hours, 0);
     const goal = state.study.goal;
     const percent = goal > 0 ? Math.min(100, (totalStudied / goal) * 100) : 0;
     const displayPercent = Math.round(percent);
@@ -436,6 +443,15 @@
     $("#studyStatus").textContent = percent >= 100
       ? "Goal complete. Keep the momentum going."
       : `${Number((goal - totalStudied).toFixed(2))} hours left to reach your goal.`;
+
+    const sessionList = $("#studySessionList");
+    sessionList.innerHTML = state.study.sessions.length
+      ? [...state.study.sessions].reverse().map((session) => {
+        const hours = Number.isInteger(session.hours) ? session.hours : session.hours.toFixed(2);
+        const date = session.date ? shortDateLabel(session.date) : "Date not recorded";
+        return `<li class="study-session-row"><span>${hours} ${hours === 1 ? "hour" : "hours"}</span><time datetime="${session.date || ""}">${date}</time></li>`;
+      }).join("")
+      : `<li class="study-history-empty">No study sessions yet.</li>`;
   }
 
   /* ============================================================
@@ -666,7 +682,7 @@
     const goal = parseFloat($("#studyGoal").value);
     if (!isFinite(hours) || hours <= 0 || !isFinite(goal) || goal <= 0) return;
     state.study.goal = goal;
-    state.study.sessions.push(hours);
+    state.study.sessions.push({ hours, date: todayISO() });
     saveState();
     $("#studyHours").value = "";
     renderStudy();
