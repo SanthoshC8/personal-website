@@ -143,7 +143,8 @@
         { id: cryptoId(), text: "Set up automatic savings transfer", done: true, due: null },
         { id: cryptoId(), text: "Cancel unused subscription", done: false, due: null },
         { id: cryptoId(), text: "File receipts for taxes", done: false, due: daysAgoISO(-10) }
-      ]
+      ],
+      study: { goal: 40, sessions: [] }
     };
   }
 
@@ -157,7 +158,13 @@
         settings: Object.assign({}, base.settings, parsed.settings || {}),
         transactions: Array.isArray(parsed.transactions) ? parsed.transactions : base.transactions,
         budgets: Array.isArray(parsed.budgets) ? parsed.budgets : base.budgets,
-        tasks: Array.isArray(parsed.tasks) ? parsed.tasks : base.tasks
+        tasks: Array.isArray(parsed.tasks) ? parsed.tasks : base.tasks,
+        study: {
+          goal: Number(parsed.study && parsed.study.goal) > 0 ? Number(parsed.study.goal) : base.study.goal,
+          sessions: Array.isArray(parsed.study && parsed.study.sessions)
+            ? parsed.study.sessions.filter((hours) => Number(hours) > 0).map(Number)
+            : base.study.sessions
+        }
       };
     } catch (e) {
       console.error("Couldn't read saved data — starting from the demo set instead.", e);
@@ -412,56 +419,23 @@
   }
 
   /* ============================================================
-     Calendar
+     Study
      ============================================================ */
-  let calState = null;
-  let selectedDate = null;
+  function renderStudy() {
+    const totalStudied = state.study.sessions.reduce((sum, hours) => sum + hours, 0);
+    const goal = state.study.goal;
+    const percent = goal > 0 ? Math.min(100, (totalStudied / goal) * 100) : 0;
+    const displayPercent = Math.round(percent);
+    const displayHours = Number.isInteger(totalStudied) ? totalStudied : totalStudied.toFixed(2);
 
-  function renderCalendar() {
-    const label = new Date(calState.year, calState.month, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" });
-    $("#calMonthLabel").textContent = label;
-
-    const firstDow = new Date(calState.year, calState.month, 1).getDay();
-    const daysInMonth = new Date(calState.year, calState.month + 1, 0).getDate();
-    const todayIso = todayISO();
-
-    let cells = "";
-    for (let i = 0; i < firstDow; i++) cells += `<div class="cal-cell is-blank"></div>`;
-    for (let d = 1; d <= daysInMonth; d++) {
-      const iso = `${calState.year}-${pad2(calState.month + 1)}-${pad2(d)}`;
-      const hasMoney = state.transactions.some((t) => t.date === iso);
-      const hasTask = state.tasks.some((t) => t.due === iso);
-      const isToday = iso === todayIso;
-      const isSelected = iso === selectedDate;
-      cells += `<button type="button" class="cal-cell ${isToday ? "is-today" : ""} ${isSelected ? "is-selected" : ""}" data-date="${iso}">
-        <span>${d}</span>
-        <span class="cal-dots">${hasMoney ? '<i class="dot dot-money"></i>' : ""}${hasTask ? '<i class="dot dot-task"></i>' : ""}</span>
-      </button>`;
-    }
-    $("#calendarGrid").innerHTML = cells;
-
-    if (selectedDate) renderDayDetail(selectedDate);
-    else $("#dayDetail").hidden = true;
-  }
-
-  function renderDayDetail(iso) {
-    const panel = $("#dayDetail");
-    panel.hidden = false;
-    const dayTx = state.transactions.filter((t) => t.date === iso);
-    const dayTasks = state.tasks.filter((t) => t.due === iso);
-    const label = parseISO(iso).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
-
-    let html = `<h4>${label}</h4>`;
-    if (!dayTx.length && !dayTasks.length) {
-      html += `<p class="empty-state" style="padding:8px 0;">Nothing on the books for this day.</p>`;
-    }
-    dayTx.forEach((t) => {
-      html += `<div class="day-detail-item"><span>${escapeHtml(t.name)}</span><span class="txn-amount ${t.amount > 0 ? "is-income" : "is-expense"}">${formatSigned(t.amount)}</span></div>`;
-    });
-    dayTasks.forEach((t) => {
-      html += `<div class="day-detail-item"><span>${t.done ? "✓ " : ""}${escapeHtml(t.text)}</span><span>${t.done ? "Done" : "Due"}</span></div>`;
-    });
-    panel.innerHTML = html;
+    $("#studyGoal").value = goal || "";
+    $("#studyProgressFigure").textContent = `${displayHours} / ${goal} hours`;
+    $("#studyPercent").textContent = `${displayPercent}%`;
+    $("#studyRing").style.setProperty("--study-progress", `${percent}%`);
+    $("#studyRing").setAttribute("aria-label", `${displayPercent} percent of study goal completed`);
+    $("#studyStatus").textContent = percent >= 100
+      ? "Goal complete. Keep the momentum going."
+      : `${Number((goal - totalStudied).toFixed(2))} hours left to reach your goal.`;
   }
 
   /* ============================================================
@@ -508,11 +482,11 @@
     $$(".view").forEach((v) => v.classList.toggle("is-active", v.dataset.view === view));
     $$(".nav-item").forEach((n) => n.classList.toggle("is-active", n.dataset.view === view));
     $$(".tab-item").forEach((n) => n.classList.toggle("is-active", n.dataset.view === view));
-    $("#fabAdd").classList.toggle("is-hidden", view === "calendar");
+    $("#fabAdd").classList.toggle("is-hidden", view === "study");
 
     if (view === "dashboard") renderDashboard();
     else if (view === "budget") renderBudget();
-    else if (view === "calendar") renderCalendar();
+    else if (view === "study") renderStudy();
     else if (view === "tasks") renderTasks();
   }
 
@@ -520,7 +494,7 @@
     $("#currentDate").textContent = new Date().toLocaleDateString(undefined, { month: "long", year: "numeric" });
     renderDashboard();
     renderBudget();
-    renderCalendar();
+    renderStudy();
     renderTasks();
   }
 
@@ -633,7 +607,6 @@
     closeModal("txnOverlay");
     renderDashboard();
     renderBudget();
-    renderCalendar();
     showToast("Transaction added");
   });
 
@@ -669,7 +642,6 @@
     input.value = "";
     $("#taskDue").value = "";
     renderTasks();
-    renderCalendar();
     showToast("Task added");
   });
 
@@ -681,32 +653,24 @@
       if (t) t.done = !t.done;
       saveState();
       renderTasks();
-      renderCalendar();
     } else if (delBtn) {
       state.tasks = state.tasks.filter((x) => x.id !== delBtn.dataset.deleteTask);
       saveState();
       renderTasks();
-      renderCalendar();
     }
   });
 
-  $("#calPrev").addEventListener("click", () => {
-    calState.month -= 1;
-    if (calState.month < 0) { calState.month = 11; calState.year -= 1; }
-    selectedDate = null;
-    renderCalendar();
-  });
-  $("#calNext").addEventListener("click", () => {
-    calState.month += 1;
-    if (calState.month > 11) { calState.month = 0; calState.year += 1; }
-    selectedDate = null;
-    renderCalendar();
-  });
-  $("#calendarGrid").addEventListener("click", (e) => {
-    const cell = e.target.closest("[data-date]");
-    if (!cell) return;
-    selectedDate = cell.dataset.date;
-    renderCalendar();
+  $("#studyForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const hours = parseFloat($("#studyHours").value);
+    const goal = parseFloat($("#studyGoal").value);
+    if (!isFinite(hours) || hours <= 0 || !isFinite(goal) || goal <= 0) return;
+    state.study.goal = goal;
+    state.study.sessions.push(hours);
+    saveState();
+    $("#studyHours").value = "";
+    renderStudy();
+    showToast(`${hours} study hours added`);
   });
 
   $("#fabAdd").addEventListener("click", () => {
@@ -740,7 +704,6 @@
   state = loadState();
   saveState();
   const now = new Date();
-  calState = { year: now.getFullYear(), month: now.getMonth() };
   $("#currentDate").textContent = now.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   setActiveView("dashboard");
 })();

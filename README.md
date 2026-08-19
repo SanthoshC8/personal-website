@@ -1,6 +1,6 @@
-# My Finances
+# Study
 
-A personal finance dashboard — net worth, budgets, a calendar, and money tasks — in three plain files with no build step and no backend. Looks and behaves like a native app on iPhone (bottom tab bar, safe-area padding, a floating add button) and expands to a sidebar layout on desktop.
+A focused study-hours tracker with a goal, cumulative session logging, and a progress ring. It is built in three plain files with no build step and no backend. It looks and behaves like a native app on iPhone and expands to a sidebar layout on desktop.
 
 ## Deploy it on GitHub Pages
 
@@ -16,9 +16,10 @@ That's it — no npm install, no build command.
 
 ## How it works
 
-- All data (transactions, budgets, tasks, settings) is stored in the browser's `localStorage`. Nothing is sent to a server, so it's private to whichever device and browser you open it on — it won't sync between your phone and laptop.
+- All data (transactions, budgets, tasks, settings, and study sessions) is stored in the browser's `localStorage`. Nothing is sent to a server, so it's private to whichever device and browser you open it on — it won't sync between your phone and laptop.
 - It ships with realistic demo data (paychecks, rent, groceries, etc.) so the dashboard, chart, and budget bars aren't empty on first load.
 - Use the gear icon to set your own starting balance, currency, and monthly income goal, or to reset back to the demo data.
+- Open **Study**, enter the hours studied today and your total goal, then press **Add study hours**. Each submission is added to the cumulative total and updates the progress ring.
 
 ## Customizing
 

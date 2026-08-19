@@ -626,83 +626,77 @@ a { color: var(--verdigris-light); }
 .icon-btn-mini .icon { width: 14px; height: 14px; }
 
 /* ============================================================
-   Calendar
+   Study
    ============================================================ */
 
-.calendar-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-  font-family: var(--font-mono);
-  font-weight: 600;
-}
-.calendar-nav .icon-btn { background: var(--paper-2); border-color: var(--paper-line); color: var(--text-onpaper); width: 34px; height: 34px; }
-.calendar-nav .icon-btn:hover { background: var(--paper-line); }
-
-.calendar-weekdays {
+.study-form {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  font-size: 11px;
-  text-align: center;
-  color: var(--text-onpaper-muted);
-  font-weight: 600;
-  margin-bottom: 4px;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 14px;
+  align-items: end;
 }
 
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
-}
-
-.cal-cell {
-  aspect-ratio: 1;
-  border-radius: var(--radius-sm);
+.study-field {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  font-size: 13px;
-  font-family: var(--font-mono);
+  gap: 7px;
+  color: var(--text-onpaper-muted);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.study-field input {
+  width: 100%;
+  background: var(--paper-2);
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-sm);
   color: var(--text-onpaper);
-  background: transparent;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  padding: 12px;
+}
+
+.study-field input:focus { border-color: var(--verdigris); outline: none; }
+.study-submit { height: 46px; }
+
+.study-progress-panel { max-width: 620px; }
+
+.study-progress-copy {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px dashed var(--paper-line);
+  padding-bottom: 14px;
+}
+
+.study-progress-copy h3 { font-size: 20px; margin-top: 4px; }
+.study-progress-figure { font-family: var(--font-mono); font-size: 13px; color: var(--text-onpaper-muted); }
+
+.study-ring-wrap { display: grid; place-items: center; padding: 30px 0 22px; }
+.study-ring {
+  --study-progress: 0%;
+  width: min(260px, 65vw);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(var(--verdigris) var(--study-progress), var(--paper-2) 0);
   position: relative;
 }
-.cal-cell.is-blank { visibility: hidden; }
-.cal-cell:not(.is-blank):hover { background: var(--paper-2); }
-.cal-cell.is-today { background: var(--verdigris); color: #eef7f3; font-weight: 700; }
-.cal-cell.is-selected { outline: 2px solid var(--gold); outline-offset: -2px; }
-
-.cal-dots { display: flex; gap: 2px; height: 5px; }
-.cal-dots .dot { width: 5px; height: 5px; border-radius: 50%; }
-.dot-money { background: var(--verdigris); }
-.dot-task { background: var(--gold); }
-.cal-cell.is-today .dot-money,
-.cal-cell.is-today .dot-task { background: #eef7f3; }
-
-.calendar-legend {
-  display: flex;
-  gap: 16px;
-  margin-top: 14px;
-  font-size: 11.5px;
-  color: var(--text-onpaper-muted);
+.study-ring::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border-radius: 50%;
+  background: var(--paper);
 }
-.calendar-legend span { display: flex; align-items: center; gap: 6px; }
-.calendar-legend .dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
-
-.day-detail { display: flex; flex-direction: column; gap: 10px; }
-.day-detail h4 { font-family: var(--font-mono); font-size: 13px; margin: 0 0 4px; color: var(--text-onpaper-muted); }
-.day-detail-item {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  font-size: 13.5px;
-  padding: 8px 0;
-  border-bottom: 1px dashed var(--paper-line);
-}
-.day-detail-item:last-child { border-bottom: none; }
+.study-ring-center { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.study-ring-center strong { font-family: var(--font-mono); font-size: 34px; }
+.study-ring-center span { color: var(--text-onpaper-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; }
+.study-status { text-align: center; color: var(--text-onpaper-muted); font-size: 13px; }
 
 /* ============================================================
    Tasks
@@ -862,6 +856,10 @@ a { color: var(--verdigris-light); }
 
   .panel { padding: 18px 16px 16px; }
 
+  .study-form { grid-template-columns: 1fr; gap: 12px; }
+  .study-submit { width: 100%; justify-content: center; }
+  .study-progress-copy { flex-direction: column; gap: 6px; }
+
   .task-form { flex-direction: column; align-items: stretch; }
   .task-form input[type="date"] { width: 100%; }
   .btn-label-full { display: none; }
@@ -948,8 +946,6 @@ a { color: var(--verdigris-light); }
   .icon-btn-label { display: inline; font-size: 13px; font-weight: 600; }
   .icon-btn .icon { width: 17px; height: 17px; }
 
-  .calendar-panel { max-width: 620px; }
-  .cal-cell { aspect-ratio: auto; height: 64px; }
 }
 
 @media (min-width: 640px) and (max-width: 899px) {
